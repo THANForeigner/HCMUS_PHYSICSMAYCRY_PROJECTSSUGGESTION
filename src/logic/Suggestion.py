@@ -9,7 +9,7 @@ from typing import List
 class Suggestion:
     def load_data(self) -> List[ProjectInfo]:
         try:
-            with open('../data/projects.json', 'r') as file:
+            with open('src/data/projects.json', 'r') as file:
                 data = json.load(file)
                 return [ProjectInfo(**item) for item in data]
         except Exception as e:

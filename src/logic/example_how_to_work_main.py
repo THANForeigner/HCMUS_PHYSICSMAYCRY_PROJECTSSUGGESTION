@@ -1,6 +1,8 @@
-from Suggestion import Suggestion
-from UserInfo import UserInfo
+from logic.Suggestion import Suggestion
+from logic.UserInfo import UserInfo
+import os
 def example_main():
+    print(os.getcwd())
     user = UserInfo(
         skills=["Python", "Data Analysis"],
         major="Computer Science",
@@ -17,5 +19,3 @@ def example_main():
     for project in suggested_projects:
         print(f"- {project.title}: {project.description}")
         
-if __name__ == "__main__":
-   example_main()

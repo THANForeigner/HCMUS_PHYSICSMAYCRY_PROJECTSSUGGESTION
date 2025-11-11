@@ -15,8 +15,8 @@ class ProjectCard(ft.Card):
                             alignment=ft.alignment.center,
                         ),
                         ft.Column([
-                            ft.Text(project["title"], weight=ft.FontWeight.BOLD),
-                            ft.Text(project["description"][:100] + "...", color=ft.Colors.GREY_600),
+                            ft.Text(project.title, weight=ft.FontWeight.BOLD),
+                            ft.Text(project.description[:100] + "...", color=ft.Colors.GREY_600),
                         ], expand=True),
                         ft.Column([
                             ft.IconButton(

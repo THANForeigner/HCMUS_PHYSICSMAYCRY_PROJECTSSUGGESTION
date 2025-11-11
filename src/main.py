@@ -68,7 +68,7 @@ class App:
             else:
                 content = LearningPath(
                     user=self.user,
-                    path=self.user["proj"],
+                    projs=self.user["proj"],
                     on_generate_new=self.open_generate_dialog,
                 )
         else:  # favorites
