@@ -7,6 +7,7 @@ class ProjectInfo:
         self.interests = Interests
         self.required_material = Required_material
         self.estimated_hours = Estimated_hours
+        self.done = False
 
     def to_dict(self):
         return {

@@ -6,6 +6,7 @@ class UserInfo:
         self.material = material
         self.weekly_hours = weekly_hours
         self.goals =  goals
+        self.past_suggestions = []
     
     def to_dict(self):
         return {
