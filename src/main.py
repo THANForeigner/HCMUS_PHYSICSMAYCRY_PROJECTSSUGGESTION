@@ -4,6 +4,7 @@ from components.Header import Header
 from components.WelcomeScreen import WelcomeScreen
 from components.LearningPath import LearningPath
 from components.PathDialog import PathDialog
+from logic import UserInfo,Suggestion
 
 # Sample path data
 SAMPLE_PATH = {
@@ -28,11 +29,11 @@ class App:
         self.screen = ft.Container(expand=True)
         page.add(self.screen)
 
-        self.dialog = PathDialog(
-            on_path_generated=self.on_path_generated,
-            on_close=lambda: self.close_dialog(),
-            preselected_skills=[]
-        )
+        self.path_dialog = PathDialog(
+                page=self.page,
+                on_path_generated=self.on_path_generated,
+                on_close=self.close_dialog,
+            )
         self.show_auth()
 
     def show_auth(self):
@@ -67,7 +68,7 @@ class App:
             else:
                 content = LearningPath(
                     user=self.user,
-                    path=SAMPLE_PATH,
+                    path=self.user["proj"],
                     on_generate_new=self.open_generate_dialog,
                 )
         else:  # favorites
@@ -83,25 +84,14 @@ class App:
         self.show_main()
 
     def open_generate_dialog(self, e=None):
-        # Add to overlay (works on every platform)
-        self.page.overlay.append(self.dialog)
-        self.dialog.open = True
-        self.page.update()
+        self.path_dialog.show()
 
-    # ------------------------------------------------------------------
     def close_dialog(self, e=None):
-        """Remove dialog **and** its backdrop."""
-        if hasattr(self, "dialog") and self.dialog in self.page.overlay:
-            self.page.overlay.remove(self.dialog)
-
-        # Remove the dark backdrop (GestureDetector)
-        self.dialog.open = False
-        self.page.overlay.clear()
-        self.page.update()
+        if hasattr(self, "path_dialog"):
+            self.path_dialog.close()
     def on_path_generated(self, path):
-        self.user["path"] = path
+        self.user["proj"] = Suggestion.Suggestion().ProjectSuggestList(path)
         self.user["hasGeneratedPath"] = True
-        self.page.show_snack_bar(ft.SnackBar(ft.Text("Learning path generated!")))
         self.update_main()
 
 def main(page: ft.Page):

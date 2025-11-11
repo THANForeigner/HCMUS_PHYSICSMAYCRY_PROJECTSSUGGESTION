@@ -17,5 +17,5 @@ def example_main():
     for project in suggested_projects:
         print(f"- {project.title}: {project.description}")
         
-#if __name__ == "__main__":
-#    main()
+if __name__ == "__main__":
+   example_main()

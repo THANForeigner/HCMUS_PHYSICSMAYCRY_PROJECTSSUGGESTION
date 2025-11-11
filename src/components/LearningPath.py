@@ -1,13 +1,15 @@
+from os import name
 import flet as ft
 from components import ProjectCard
+from logic.ProjectInfo import ProjectInfo
 from libs import AuthService
 from libs import FavService
 
 class LearningPath(ft.Container):
-    def __init__(self, user, path, on_generate_new):
+    def __init__(self, user, projs:list[ProjectInfo], on_generate_new):
         super().__init__(padding=ft.padding.symmetric(horizontal=16, vertical=32), expand=True)
         self.user = user
-        self.path = path
+        self.projs = projs
         self.on_generate_new = on_generate_new
 
         # State
@@ -18,8 +20,8 @@ class LearningPath(ft.Container):
         self.build_ui()
 
     def build_ui(self):
-        total = len(self.path["projects"])
-        done = len([p for p in self.path["projects"] if p["id"] in self.completed])
+        total = len(self.projs)
+        done = len([p for p in self.projs if p.title in self.completed])
         percent = int((done / total) * 100) if total else 0
 
         header_card = ft.Card(
@@ -29,9 +31,9 @@ class LearningPath(ft.Container):
                         ft.Column([
                             ft.Row([
                                 ft.Icon(ft.Icons.CANDLESTICK_CHART, color=ft.Colors.INDIGO_600, size=20),
-                                ft.Text(self.path["name"], size=20, weight=ft.FontWeight.BOLD)
+                                ft.Text("This is your learning path", size=20, weight=ft.FontWeight.BOLD)
                             ], spacing=8),
-                            ft.Text(self.path["description"], color=ft.Colors.GREY_600),
+                            ft.Text("hoho", color=ft.Colors.GREY_600),
                         ], expand=True),
                         ft.OutlinedButton(
                             "Generate New Path",
@@ -77,15 +79,15 @@ class LearningPath(ft.Container):
 
         # Projects List
         project_cards = []
-        for i, project in enumerate(self.path["projects"]):
-            is_locked = project.get("prerequisite") and project["prerequisite"] not in self.completed
-            is_done = project["id"] in self.completed
-            is_fav = project["id"] in self.favorites
+        for i, project in enumerate(self.projs):
+            is_locked =( i > 0 and self.projs[i-1].title not in self.completed)
+            is_done = project.title in self.completed
+            is_fav = project.title in self.favorites
 
             card = ProjectCard.ProjectCard(
                 project=project,
                 is_favorite=is_fav,
-                on_toggle_favorite=lambda pid=project["id"]: self.toggle_fav(pid),
+                on_toggle_favorite=lambda pid=project.title: self.toggle_fav(pid),
                 on_view_details=lambda p=project: self.open_detail(p),
                 is_locked=is_locked,
                 is_completed=is_done,
@@ -94,7 +96,7 @@ class LearningPath(ft.Container):
 
             # Arrow between cards
             wrapper = ft.Column([card])
-            if i < len(self.path["projects"]) - 1:
+            if i < len(self.projs) - 1:
                 wrapper.controls.append(
                     ft.Container(
                         content=ft.Icon(ft.Icons.ARROW_DOWNWARD, size=24, color=ft.Colors.GREY_300),
@@ -127,6 +129,7 @@ class LearningPath(ft.Container):
     def open_detail(self, project):
         self.selected_project = project
         self.page.dialog = self.build_dialog()
+        self.page.overlay.append(self.page.dialog)
         self.page.dialog.open = True
         self.page.update()
 
@@ -134,18 +137,18 @@ class LearningPath(ft.Container):
         if not self.selected_project:
             return ft.Container()
 
-        project = self.selected_project
-        is_fav = project["id"] in self.favorites
-        is_done = project["id"] in self.completed
+        project:ProjectInfo = self.selected_project
+        is_fav = project.title in self.favorites
+        is_done = project.title in self.completed
 
         return ft.AlertDialog(
             modal=True,
-            title=ft.Text(project["title"], weight=ft.FontWeight.BOLD),
+            title=ft.Text(project.title, weight=ft.FontWeight.BOLD),
             content=ft.Column([
-                ft.Text(project["description"]),
+                ft.Text(project.description),
                 ft.Container(height=8),
-                ft.Text(f"Difficulty: {project.get('difficulty', 'Medium')}"),
-                ft.Text(f"Est. Time: {project.get('estimatedTime', '2-4 hours')}"),
+                ft.Text(f"Required: {project.required_material}"),
+                ft.Text(f"Est. Time: {project.estimated_hours}"),
             ], tight=True, scroll=ft.ScrollMode.AUTO),
             actions=[
                 ft.TextButton(
@@ -153,12 +156,12 @@ class LearningPath(ft.Container):
                         ft.Icon(ft.Icons.BOOKMARK if is_fav else ft.Icons.BOOKMARK_BORDER),
                         ft.Text("Favorite")
                     ]),
-                    on_click=lambda _: self.toggle_fav(project["id"]),
+                    on_click=lambda _: self.toggle_fav(project.title),
                 ),
                 ft.FilledButton(
                     "Mark Complete",
                     icon=ft.Icons.CHECK,
-                    on_click=lambda _: self.mark_complete(project["id"]),
+                    on_click=lambda _: self.mark_complete(project.title),
                     disabled=is_done,
                 ),
                 ft.TextButton("Close", on_click=lambda _: self.close_dialog()),
@@ -168,9 +171,6 @@ class LearningPath(ft.Container):
     def mark_complete(self, pid):
         AuthService.complete_project(pid)
         self.completed.append(pid)
-        self.page.show_snack_bar(
-            ft.SnackBar(ft.Text("Project completed! Next unlocked."), bgcolor=ft.Colors.GREEN_600)
-        )
         self.close_dialog()
         self.build_ui()
         self.page.update()

@@ -1,7 +1,7 @@
 import numpy as np
 import json
-from ProjectInfo import ProjectInfo
-from UserInfo import UserInfo
+from logic.ProjectInfo import ProjectInfo
+from logic.UserInfo import UserInfo
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from typing import List
@@ -9,7 +9,7 @@ from typing import List
 class Suggestion:
     def load_data(self) -> List[ProjectInfo]:
         try:
-            with open('./data/projects.json', 'r') as file:
+            with open('../data/projects.json', 'r') as file:
                 data = json.load(file)
                 return [ProjectInfo(**item) for item in data]
         except Exception as e:
