@@ -91,7 +91,7 @@ class WelcomeScreen(ft.Container):
             ft.Container(height=24),
 
             info_box,
-        ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=0, expand=True)
+        ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=0, expand=True, scroll=ft.ScrollMode.AUTO)
 
     def _make_card(self, icon, title, desc):
         return ft.Container(

@@ -18,13 +18,10 @@ class PathDialog:
         self.on_path_generated = on_path_generated
         self.on_close = on_close
 
-        # selected items
         self.skills: List[str] = []
         self.major: List[str] = []
         self.interests: List[str] = []
 
-        # build UI
-        # --- FIX 1: These are the placeholders ---
         self.skills_section = ft.Container()
         self.major_section = ft.Container()
         self.interests_section = ft.Container()
@@ -35,7 +32,6 @@ class PathDialog:
             ft.Text("Generate Learning Path", weight=ft.FontWeight.BOLD, size=18)
         ], spacing=8)
 
-        # Buttons
         self.gen_btn = ft.FilledButton(
             "Generate Path",
             icon=ft.Icons.STARS,
@@ -46,13 +42,11 @@ class PathDialog:
         self.can_btn = ft.OutlinedButton(
             "Cancel", on_click=lambda _: self.close(), expand=True
         )
-        # Main content
         self._content = ft.Container(
             ft.Column([
                 title,
                 ft.Text("Select your profile", color=ft.Colors.GREY_600),
 
-                # --- FIX 1: Use the placeholders in the layout ---
                 self.skills_section,
                 self.major_section,
                 self.interests_section,
@@ -73,15 +67,12 @@ class PathDialog:
             on_click=lambda _: self.close(),
         )
 
-        # Full overlay
         self.overlay:ft.Stack = ft.Stack([
             self.backdrop,
             ft.Container(self._content, alignment=ft.alignment.center),
         ])
 
-        # This will now correctly populate the placeholders
         self._refresh_all_sections()
-        # Update button state
         self._update_generate_button()
 
     # ------------------------------------------------------------------
@@ -103,12 +94,11 @@ class PathDialog:
 
     # ------------------------------------------------------------------
     def _badge(self, text, selected, on_click, disabled=False):
-        # --- FIX 6: Removed debug print ---
         return ft.Container(
-            content=ft.Row([ft.Text(text, size=13), ft.Icon(ft.Icons.CHECK, size=14, visible=selected)], spacing=4, tight=True),
+            content=ft.Row([ft.Text(text, size=13,color=ft.Colors.WHITE, weight=ft.FontWeight.NORMAL), ft.Icon(ft.Icons.CHECK, size=14, visible=selected)], spacing=4, tight=True),
             padding=ft.padding.symmetric(12, 6),
             bgcolor=ft.Colors.INDIGO_600 if selected else ft.Colors.TRANSPARENT,
-            border=ft.border.all(1, ft.Colors.INDIGO_600 if selected else ft.Colors.GREY_400),
+            border=ft.border.all(2, ft.Colors.INDIGO_600 if selected else ft.Colors.GREY_400),
             border_radius=20,
             on_click=on_click if not disabled else None,
             opacity=0.5 if disabled else 1.0,
@@ -116,8 +106,6 @@ class PathDialog:
 
     # ------------------------------------------------------------------
     def _toggle_skill(self, skill):
-        # --- FIX 4: Cleanup debug print ---
-        # print(f"TOGGLE SKILL: {skill}")
         if skill in self.skills:
             self.skills.remove(skill)
         elif len(self.skills) < 3:
@@ -127,8 +115,6 @@ class PathDialog:
         self.page.update()
 
     def _toggle_major(self, major):
-        # --- FIX 4: Cleanup debug print ---
-        # print(f"TOGGLE MAJOR: {major}")
         if major in self.major:
             self.major.clear()
         else:
@@ -138,8 +124,6 @@ class PathDialog:
         self.page.update()
 
     def _toggle_interest(self, interest):
-        # --- FIX 4: Cleanup debug print ---
-        # print(f"TOGGLE INTEREST: {interest}")
         if interest in self.interests:
             self.interests.remove(interest)
         elif len(self.interests) < 3:
@@ -149,13 +133,10 @@ class PathDialog:
         self.page.update()
         
     def _refresh_all_sections(self):
-        # --- FIX 5: Removed debug print ---
         self.skills_section.content = self._section("Skills", skills, self.skills, 3, self._toggle_skill)
         self.major_section.content = self._section("Major (choose 1)", major, self.major, 1, self._toggle_major, True)
         self.interests_section.content = self._section("Interests", interests, self.interests, 3, self._toggle_interest)
 
-        # --- FIX 3: Removed redundant page update ---
-        # self.page.update() 
     
     # ------------------------------------------------------------------
     def _update_generate_button(self):

@@ -137,36 +137,120 @@ class LearningPath(ft.Container):
         if not self.selected_project:
             return ft.Container()
 
-        project:ProjectInfo = self.selected_project
-        is_fav = project.title in self.favorites
-        is_done = project.title in self.completed
+        project: ProjectInfo = self.selected_project
+        is_fav   = project.title in self.favorites
+        is_done  = project.title in self.completed
 
         return ft.AlertDialog(
-            modal=True,
-            title=ft.Text(project.title, weight=ft.FontWeight.BOLD),
-            content=ft.Column([
-                ft.Text(project.description),
-                ft.Container(height=8),
-                ft.Text(f"Required: {project.required_material}"),
-                ft.Text(f"Est. Time: {project.estimated_hours}"),
-            ], tight=True, scroll=ft.ScrollMode.AUTO),
-            actions=[
-                ft.TextButton(
-                    content=ft.Row([
-                        ft.Icon(ft.Icons.BOOKMARK if is_fav else ft.Icons.BOOKMARK_BORDER),
-                        ft.Text("Favorite")
-                    ]),
-                    on_click=lambda _: self.toggle_fav(project.title),
+                modal=True,
+                shape=ft.RoundedRectangleBorder(radius=16),
+                bgcolor=ft.Colors.WHITE,
+                
+                title=ft.Row(
+                    [
+                        ft.Text(project.title, weight=ft.FontWeight.BOLD, size=20, expand=True, color=ft.Colors.BLACK),
+                        ft.IconButton(ft.Icons.CLOSE, on_click=lambda _: self.close_dialog(), icon_color=ft.Colors.GREY_600),
+                    ],
+                    alignment=ft.MainAxisAlignment.SPACE_BETWEEN
                 ),
-                ft.FilledButton(
-                    "Mark Complete",
-                    icon=ft.Icons.CHECK,
-                    on_click=lambda _: self.mark_complete(project.title),
-                    disabled=is_done,
+
+                # --- 2. CONTENT ---
+                content=ft.Container(
+                    width=560,
+                    height=400, # Set a height to make the column scrollable
+                    content=ft.Column(
+                        [
+                            ft.Text(project.description, size=14, color=ft.Colors.GREY_700),
+                            
+                            ft.Divider(height=20),
+
+                            ft.Row(
+                                [
+                                    ft.Column(
+                                        [
+                                            ft.Row([ft.Icon(ft.Icons.SCHOOL_OUTLINED, color=ft.Colors.GREY_500, size=16), ft.Text("Major", size=12, color=ft.Colors.GREY_500)], spacing=4),
+                                            ft.Text(project.major or "—", size=16, weight=ft.FontWeight.BOLD, color=ft.Colors.BLACK),
+                                        ],
+                                        expand=True,
+                                    ),
+                                    ft.Column(
+                                        [
+                                            ft.Row([ft.Icon(ft.Icons.TIMER_OUTLINED, color=ft.Colors.GREY_500, size=16), ft.Text("Est. Time", size=12, color=ft.Colors.GREY_500)], spacing=4),
+                                            ft.Text(f"{project.estimated_hours} hours", size=16, weight=ft.FontWeight.BOLD, color=ft.Colors.BLACK),
+                                        ],
+                                        expand=True,
+                                    ),
+                                ],
+                                spacing=16,
+                            ),
+                            
+                            ft.Divider(height=20),
+
+                            ft.Text("Skills", weight=ft.FontWeight.BOLD, size=16, color=ft.Colors.BLACK),
+                            ft.Container(height=4),
+                            ft.Row(
+                                [
+                                    ft.Chip(
+                                        label=ft.Text(s, color=ft.Colors.BLACK, weight=ft.FontWeight.W_400, size=16), 
+                                        color= ft.Colors.GREY_500
+                                    ) for s in project.skills
+                                ],
+                                wrap=True,
+                                spacing=6,
+                                run_spacing=6,
+                            ),
+                            
+                            ft.Container(height=16), 
+
+                            ft.Text("Requires", weight=ft.FontWeight.BOLD, size=16, color=ft.Colors.BLACK),
+                            ft.Container(height=4),
+                            ft.Row(
+                                [
+                                    ft.Chip(
+                                        label=ft.Text(project.required_material, color=ft.Colors.BLACK, weight=ft.FontWeight.W_400, size=16), 
+                                        color= ft.Colors.GREY_500
+                                    ) 
+                                ],
+                                wrap=True, 
+                                spacing=6,
+                                run_spacing=6,
+                            ),
+
+                        ],
+                        scroll=ft.ScrollMode.AUTO,
+                        spacing=12
+                    ),
+                    padding=ft.padding.only(top=0, bottom=12, left=4, right=4) # Add padding to content
                 ),
-                ft.TextButton("Close", on_click=lambda _: self.close_dialog()),
-            ],
-        )
+                
+                # --- 3. ACTIONS ---
+                # Use the 'actions' slot for the buttons
+                actions=[
+                    ft.TextButton(
+                        content=ft.Row(
+                            [
+                                ft.Icon(ft.Icons.BOOKMARK if is_fav else ft.Icons.BOOKMARK_BORDER, color=ft.Colors.INDIGO_600),
+                                ft.Text("Favorite", color=ft.Colors.INDIGO_600)
+                            ], 
+                            spacing=4
+                        ),
+                        on_click=lambda _: self.toggle_fav(project.title),
+                    ),
+                    ft.FilledButton(
+                        "Mark Complete",
+                        icon=ft.Icons.CHECK,
+                        on_click=lambda _: self.mark_complete(project.title),
+                        disabled=is_done,
+                        style=ft.ButtonStyle(
+                            bgcolor=ft.Colors.INDIGO_600 if not is_done else ft.Colors.GREY_300,
+                            color=ft.Colors.WHITE if not is_done else ft.Colors.GREY_500,
+                        )
+                    ),
+                ],
+                actions_padding=ft.padding.only(bottom=16, right=24),
+                content_padding=ft.padding.all(24),
+                title_padding=ft.padding.all(24),
+            )          
 
     def mark_complete(self, pid):
         AuthService.complete_project(pid)

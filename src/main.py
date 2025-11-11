@@ -22,8 +22,7 @@ class App:
         self.page = page
         page.title = "UniProject Finder"
         page.bgcolor = ft.Colors.GREY_50
-        page.padding = 0
-
+        page.spacing = 0
         self.user = None
         self.current_view = "learningPath"
         self.screen = ft.Container(expand=True)
@@ -76,8 +75,7 @@ class App:
                 content=ft.Text("Favorites coming soon", size=24),
                 expand=True, alignment=ft.alignment.center
             )
-
-        self.screen.content = ft.Column([header, content], expand=True, spacing=0)
+        self.screen.content = ft.Column([header, content],expand_loose=True, alignment = ft.MainAxisAlignment.START, expand=True)
         self.page.update()
 
     def update_main(self):
