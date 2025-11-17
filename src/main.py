@@ -28,11 +28,7 @@ class App:
         self.screen = ft.Container(expand=True)
         page.add(self.screen)
 
-        self.path_dialog = PathDialog(
-                page=self.page,
-                on_path_generated=self.on_path_generated,
-                on_close=self.close_dialog,
-            )
+        self.path_dialog = ft.Container()
         self.show_auth()
 
     def show_auth(self):
@@ -82,6 +78,12 @@ class App:
         self.show_main()
 
     def open_generate_dialog(self, e=None):
+        self.path_dialog =  PathDialog(
+                page=self.page,
+                on_path_generated=self.on_path_generated,
+                on_close=self.close_dialog,
+            )
+
         self.path_dialog.show()
 
     def close_dialog(self, e=None):
