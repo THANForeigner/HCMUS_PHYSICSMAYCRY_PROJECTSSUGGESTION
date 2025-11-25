@@ -5,6 +5,7 @@ from components.WelcomeScreen import WelcomeScreen
 from components.LearningPath import LearningPath
 from components.PathDialog import PathDialog
 from logic import UserInfo,Suggestion
+from data.fb import *
 
 # Sample path data
 SAMPLE_PATH = {
@@ -38,6 +39,7 @@ class App:
         self.page.update()
 
     def login(self, user):
+        # Đảm bảo user có các trường cần thiết
         self.user = user
         self.current_view = "learningPath"
         self.show_main()
@@ -50,6 +52,7 @@ class App:
         def logout():
             self.show_auth()
 
+        print("DEBUG USER DATA:", self.user)
         header = Header(
             user=self.user,
             on_logout=logout,
@@ -63,7 +66,7 @@ class App:
             else:
                 content = LearningPath(
                     user=self.user,
-                    projs=self.user["proj"],
+                    projs=self.user.get("proj", []),
                     on_generate_new=self.open_generate_dialog,
                 )
         else:  # favorites
