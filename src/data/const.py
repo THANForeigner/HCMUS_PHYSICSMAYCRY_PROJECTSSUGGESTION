@@ -15,7 +15,23 @@ skills = [
     "Interpreters", "Parsing", "Concurrency", "Networking", "Compilers", "Lexing", "Assembly"
 ]
 major = [
-    "Cybersecurity & Systems", "Foundational", "AI/ML", "Mobile Engineering", "Full-Stack Web"
+    "Cybersecurity & Systems", 
+    "Foundational", 
+    "AI/ML", 
+    "Mobile Engineering", 
+    "Full-Stack Web",
+    "Cloud & DevOps",
+    "Data Science",
+    "Game Development",
+    "Embedded Systems",
+    "Blockchain & Web3",
+    "UI/UX Engineering"
+]
+materials = [
+    "Laptop", "Internet Access", "Webcam", "Microphone", "Android Phone", "iPhone",
+    "Arduino", "Raspberry Pi", "AWS Account", "Google Cloud Account", "Azure Account",
+    "Linux Server", "Windows PC", "MacBook", "GPU", "Docker", "Kubernetes Cluster",
+    "Github Account", "Text Editor", "IDE", "Python Installed", "Node.js Installed"
 ]
 interests = [
     "Cryptography", "Algorithms", "UI/UX", "Cybersecurity", "Hardware", "Web Development",

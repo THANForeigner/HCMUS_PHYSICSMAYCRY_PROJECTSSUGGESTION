@@ -38,7 +38,7 @@ class AuthForm(ft.Container):
                 ], alignment=ft.MainAxisAlignment.CENTER)
             ], spacing=15),
             padding=ft.padding.only(top=10),
-            bgcolor=ft.Colors.AMBER_50  # Chỉnh màu nhạt xíu cho dễ nhìn
+            bgcolor=ft.Colors.AMBER_50
         )
 
         register_tab = ft.Container(
@@ -66,7 +66,7 @@ class AuthForm(ft.Container):
                 self.message
             ], spacing=15),
             padding=ft.padding.only(top=10),
-            bgcolor=ft.Colors.AMBER_50  # Chỉnh màu nhạt xíu cho dễ nhìn
+            bgcolor=ft.Colors.AMBER_50
         )
 
         self.content = ft.Container(
@@ -95,15 +95,26 @@ class AuthForm(ft.Container):
         self.error_message.visible = False
         self.update()
 
-    # [SỬA] Logic Login dùng Firebase
     def handle_login(self, e):
         self.hide_error()
         email = self.login_email.value
         pwd = self.login_password.value
-        auth_result = firebase_login(email, pwd)
-        if "error" in auth_result:
-            print(auth_result["error"])
+        
+        if not email or not pwd:
+            self.show_error("Please enter email and password")
             return
+
+        auth_result = firebase_login(email, pwd)
+        
+        if "error" in auth_result:
+            err_msg = auth_result["error"]
+            # Firebase returns 'INVALID_LOGIN_CREDENTIALS' for wrong email or password
+            if "INVALID_LOGIN_CREDENTIALS" in err_msg:
+                self.show_error("Wrong email or password!")
+            else:
+                self.show_error(f"Login failed: {err_msg}")
+            return
+            
         self.on_auth_success(get_user_profile(auth_result))
 
     def handle_register(self, e):
@@ -120,13 +131,13 @@ class AuthForm(ft.Container):
 
         if "error" in result:
             err = result["error"]
+            # Firebase error for existing email is usually EMAIL_EXISTS
             if "EMAIL_EXISTS" in err:
-                self.show_error("Email này đã được đăng ký!")
+                self.show_error("Email already used! Please try another.")
             else:
                 self.show_error(err)
         else:
             self.on_auth_success(create_new_user_profile(result, name))
-
     def handle_forgot_password(self, e):
         self.message.visible = False
         self.update()

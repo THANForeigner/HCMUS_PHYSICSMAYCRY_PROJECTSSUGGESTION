@@ -22,7 +22,8 @@ class ProjectCard(ft.Card):
                             ft.IconButton(
                                 ft.Icons.BOOKMARK if is_favorite else ft.Icons.BOOKMARK_BORDER,
                                 on_click=lambda _: on_toggle_favorite(),
-                                tooltip="Favorite"
+                                tooltip="Favorite",
+                                disabled=is_locked,
                             ),
                             ft.Icon(ft.Icons.LOCK if is_locked else ft.Icons.CHECK_CIRCLE,
                                     color=ft.Colors.GREY_400 if is_locked else ft.Colors.GREEN_600),

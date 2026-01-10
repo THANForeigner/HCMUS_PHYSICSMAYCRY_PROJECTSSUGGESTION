@@ -1,12 +1,11 @@
 import numpy as np
-# import json  <-- Bỏ dòng này vì không đọc file local nữa
+# import json
 from logic.ProjectInfo import ProjectInfo
 from logic.UserInfo import UserInfo
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from typing import List
-import src.data.fb as fb  # <-- THÊM: Import file fb để lấy dữ liệu
-
+import data.fb as fb
 
 class Suggestion:
     def load_data(self) -> List[ProjectInfo]:
@@ -20,29 +19,53 @@ class Suggestion:
 
     def _combine_fields_to_doc(self, obj: UserInfo | ProjectInfo) -> str:
         all_tags = []
+        
+        #skills
         all_tags.extend(obj.skills)
-        all_tags.extend(obj.major)
+        
+        #majors
+        if isinstance(obj.major, list):
+            all_tags.extend(obj.major)
+        else:
+            all_tags.append(str(obj.major))
+        
+        #interests
         all_tags.extend(obj.interests)
+        
+        #materials
+        if hasattr(obj, 'material'):
+            if isinstance(obj.material, list):
+                all_tags.extend(obj.material)
+            elif isinstance(obj.material, str):
+                all_tags.append(obj.material)
+        elif hasattr(obj, 'required_material'):
+            if isinstance(obj.required_material, list):
+                all_tags.extend(obj.required_material)
+            else:
+                all_tags.append(str(obj.required_material))
+                
+        #time
+        if hasattr(obj, 'weekly_hours'):
+            all_tags.append(str(obj.weekly_hours))
+        elif hasattr(obj, 'estimated_hours'):
+            all_tags.append(str(obj.estimated_hours))
+
         return " ".join([tag.lower() for tag in all_tags])
 
     def __init__(self):
         self.projects = self.load_data()
         project_docs = [self._combine_fields_to_doc(proj) for proj in self.projects]
 
-        # Thêm kiểm tra để tránh lỗi empty vocabulary nếu project_docs rỗng
         if not project_docs:
             print("No projects loaded. Suggestion engine is empty.")
             self.project_vectors = np.array([])
-            # Tạo vectorizer rỗng hoặc dummy để không crash các hàm sau
             try:
                 self.vectorizer = CountVectorizer(binary=True).fit(["dummy data"])
-            except:
+            except Exception:
                 pass
             return
-
         self.vectorizer = CountVectorizer(binary=True).fit(project_docs)
-        self.project_vectors = self.vectorizer.transform(
-            project_docs)  # Dùng transform thay vì fit_transform để đồng bộ
+        self.project_vectors = self.vectorizer.transform(project_docs)
         print(f"Successfully loaded and vectorized {len(self.projects)} projects.")
         print(f"Vocabulary size (total unique tags): {len(self.vectorizer.get_feature_names_out())}")
 
@@ -51,16 +74,16 @@ class Suggestion:
         vector = self.vectorizer.transform([doc])
         return vector
 
-    def ProjectSuggestList(self, user: UserInfo, top_n: int = 5) -> List[ProjectInfo]:
+    def ProjectSuggestList(self, user: UserInfo, completed_projects: list[str] = [], top_n: int = 5) -> List[ProjectInfo]:
         if self.project_vectors.size == 0:
             print("No projects available for suggestion.")
             return []
-
         user_vector = self.embed_object(user)
         similarities = cosine_similarity(user_vector, self.project_vectors).flatten()
         temp_matches = []
         for i, score in enumerate(similarities):
-            temp_matches.append((score, self.projects[i]))
+            if self.projects[i].title not in completed_projects:
+                temp_matches.append((score, self.projects[i]))
         temp_matches.sort(key=lambda x: x[0], reverse=True)
         top_10_matches = temp_matches[:10]
         temp_easiness_sort = []

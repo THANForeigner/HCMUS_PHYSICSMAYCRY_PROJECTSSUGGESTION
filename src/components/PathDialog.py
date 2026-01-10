@@ -1,12 +1,9 @@
 import flet as ft
 from flet.auth.user import User
-from data.const import interests, skills,major
+from data.const import interests, skills, major, materials
 from typing import Callable, List
 from logic import UserInfo
-# ----------------------------------------------------------------------
-# ----------------------------------------------------------------------
 
-# ----------------------------------------------------------------------
 class PathDialog:
     def __init__(
         self,
@@ -21,6 +18,7 @@ class PathDialog:
         self.skills: List[str] = []
         self.major: List[str] = []
         self.interests: List[str] = []
+        self.materials: List[str] = []
 
         self.skills_search = ""
         self.skills_visible_items = 10
@@ -28,10 +26,23 @@ class PathDialog:
         self.major_visible_items = 10
         self.interests_search = ""
         self.interests_visible_items = 10
+        self.materials_search = ""
+        self.materials_visible_items = 10
 
         self.skills_section = ft.Container()
         self.major_section = ft.Container()
         self.interests_section = ft.Container()
+        self.materials_section = ft.Container()
+        self.time_input = ft.TextField(
+            label="Weekly Hours (Number only)",
+            value="10",
+            keyboard_type=ft.KeyboardType.NUMBER,
+            input_filter=ft.InputFilter(allow=True, regex_string=r"[0-9]", replacement_string=""),
+            border_radius=20,
+            color=ft.Colors.WHITE,
+            border_color=ft.Colors.GREY_400,
+            text_style=ft.TextStyle(color=ft.Colors.WHITE)
+        )
         # ----------------------------------------
 
         title = ft.Row([
@@ -44,7 +55,7 @@ class PathDialog:
             icon=ft.Icons.STARS,
             on_click=self._generate,
             expand=True,
-            style=ft.ButtonStyle(bgcolor=ft.Colors.CYAN_400, color=ft.Colors.BLACK),
+            style=ft.ButtonStyle(bgcolor=ft.Colors.CYAN_400, color=ft.Colors.WHITE),
         )
         self.can_btn = ft.OutlinedButton(
             "Cancel", on_click=lambda _: self.close(), expand=True
@@ -53,17 +64,22 @@ class PathDialog:
             ft.Column([
                 title,
                 ft.Container(height=10),
-                ft.Text("Select your skills, major, and interests to generate a personalized learning path.", color=ft.Colors.GREY_400),
+                ft.Text("Select your skills, major, materials and interests to generate a personalized learning path.", color=ft.Colors.WHITE),
                 ft.Container(height=20),
+                ft.Text("Available Time", weight=ft.FontWeight.BOLD, size=16, color = ft.Colors.WHITE),
+                self.time_input,
+                ft.Container(height=10),
                 self.skills_section,
                 self.major_section,
                 self.interests_section,
+                self.materials_section,
                 # -------------------------------------------------
 
                 ft.Container(height=30),
                 ft.Row([self.gen_btn, self.can_btn], spacing=12),
             ], scroll=ft.ScrollMode.AUTO),
             width=620,
+            height=700,
             padding=24,
             bgcolor=ft.Colors.with_opacity(0.95, ft.Colors.GREY_900),
             border_radius=16,
@@ -96,6 +112,9 @@ class PathDialog:
             height=45,
             prefix_icon=ft.Icons.SEARCH,
             border_radius=20,
+            color = ft.Colors.WHITE,
+            border_color=ft.Colors.GREY_600,
+            label_style=ft.TextStyle(color=ft.Colors.GREY_400),
         )
 
         show_more_button = ft.TextButton(
@@ -111,21 +130,24 @@ class PathDialog:
             on_click=lambda _: on_show_less(),
             visible=visible_items > 10,
         )
+        
+        count_display = ""
+        if max_allowed is not None:
+            count_display = f"({len(selected)}/{max_allowed})"
 
         return ft.Column([
             ft.Divider(height=1, color=ft.Colors.GREY_800),
             ft.Container(height=10),
             ft.Row([
-                ft.Text(f"{title}", weight=ft.FontWeight.BOLD, size=16),
-                ft.Text(f"({len(selected)}/{max_allowed})", size=12, color=ft.Colors.GREY_500)
+                ft.Text(f"{title}", weight=ft.FontWeight.BOLD, size=16, color=ft.Colors.WHITE),
+                ft.Text(count_display, size=12, color=ft.Colors.GREY_400)
             ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
             ft.Container(height=5),
             search_bar,
             ft.Container(height=15),
             ft.Row(
                 [self._badge(itm, itm in selected, lambda _, s=itm: toggle_cb(s),
-                            disabled=(len(selected) >= max_allowed and itm not in selected) or
-                                     (single_select and len(selected) >= 1 and itm not in selected))
+                            disabled=(single_select and len(selected) >= 1 and itm not in selected))
                  for itm in visible_items_list],
                 spacing=10, run_spacing=10, wrap=True
             ),
@@ -159,7 +181,7 @@ class PathDialog:
     def _toggle_skill(self, skill):
         if skill in self.skills:
             self.skills.remove(skill)
-        elif len(self.skills) < 3:
+        else: # No upper limit, just append
             self.skills.append(skill)
         self._update_generate_button()
         self._refresh_all_sections()
@@ -177,7 +199,7 @@ class PathDialog:
     def _toggle_interest(self, interest):
         if interest in self.interests:
             self.interests.remove(interest)
-        elif len(self.interests) < 3:
+        else: # No upper limit, just append
             self.interests.append(interest)
         self._refresh_all_sections()
         self._update_generate_button()
@@ -231,9 +253,34 @@ class PathDialog:
         self._refresh_all_sections()
         self.page.update()
         
+    def _toggle_material(self, material_item):
+        if material_item in self.materials:
+            self.materials.remove(material_item)
+        else:
+            self.materials.append(material_item)
+        self._refresh_all_sections()
+        self._update_generate_button()
+        self.page.update()
+
+    def _on_materials_search(self, query):
+        self.materials_search = query
+        self.materials_visible_items = 10
+        self._refresh_all_sections()
+        self.page.update()
+
+    def _on_materials_show_more(self):
+        self.materials_visible_items += 10
+        self._refresh_all_sections()
+        self.page.update()
+
+    def _on_materials_show_less(self):
+        self.materials_visible_items = 10
+        self._refresh_all_sections()
+        self.page.update()
+        
     def _refresh_all_sections(self):
         self.skills_section.content = self._section(
-            "Skills", skills, self.skills, 3, self._toggle_skill,
+            "Skills", skills, self.skills, None, self._toggle_skill,
             self.skills_search, self.skills_visible_items,
             self._on_skills_search, self._on_skills_show_more, self._on_skills_show_less
         )
@@ -243,26 +290,42 @@ class PathDialog:
             self._on_major_search, self._on_major_show_more, self._on_major_show_less, True
         )
         self.interests_section.content = self._section(
-            "Interests", interests, self.interests, 3, self._toggle_interest,
+            "Interests", interests, self.interests, None, self._toggle_interest,
             self.interests_search, self.interests_visible_items,
             self._on_interests_search, self._on_interests_show_more, self._on_interests_show_less
         )
-
+        self.materials_section.content = self._section(
+            "Materials", materials, self.materials, None, self._toggle_material,
+            self.materials_search, self.materials_visible_items,
+            self._on_materials_search, self._on_materials_show_more, self._on_materials_show_less
+        )
     
     # ------------------------------------------------------------------
     def _update_generate_button(self):
-        ready = len(self.skills) == 3 and len(self.major) == 1 and len(self.interests) == 3
+        has_time = self.time_input.value and self.time_input.value.strip() != ""
+        ready = len(self.skills) >= 1 and len(self.major) == 1 and len(self.interests) >= 1 and len(self.materials) >=1 and has_time
         self.gen_btn.disabled = not ready
         # The page.update() in the toggle methods will update the button state
 
     def _generate(self, _):
+        try:
+            hours = int(self.time_input.value)
+        except ValueError:
+            hours = 10
         path = {
             "name": f"{self.major[0]} – {', '.join(self.skills)}",
             "description": f"Skills: {', '.join(self.skills)} | Interests: {', '.join(self.interests)}",
             "projects": [{"id": f"p{i}", "title": f"Project {i}", "prerequisite": f"p{i-1}" if i > 1 else None} for i in range(1, 6)]
         }
-        major = self.major[0]
-        us = UserInfo.UserInfo(self.skills,major,self.interests,"Laptop",1000,["Learning Machine"])
+        major_val= self.major[0] if self.major else "General"
+        us = UserInfo.UserInfo(
+            skills=self.skills,
+            major=major_val,
+            interests=self.interests,
+            material=self.materials,  
+            weekly_hours=hours,
+            goals=["Generate Path"]
+        )
         self.on_path_generated(us)
         self.close()
 

@@ -120,9 +120,7 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-src/data/.env
 .venv
-env/
 venv/
 ENV/
 env.bak/
@@ -161,3 +159,6 @@ cython_debug/
 
 # Flet
 storage/
+
+# Environment variables
+.env

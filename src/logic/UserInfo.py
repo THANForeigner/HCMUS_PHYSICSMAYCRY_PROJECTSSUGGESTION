@@ -1,5 +1,5 @@
 class UserInfo:
-    def __init__(self, skills: list[str], major: str, interests: list[str], material: str, weekly_hours: int, goals: list[str]):
+    def __init__(self, skills: list[str], major: str, interests: list[str], material: list[str], weekly_hours: int, goals: list[str]):
         self.skills = skills
         self.major = major
         self.interests = interests
